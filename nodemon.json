@@ -2,6 +2,6 @@
     "env": {
         "MONGO_DB": "events-dev",
         "MONGO_USER": "kiran",
-        "MONGO_PASSWD": "tzpp8qoulrxmDVaz"
+        "MONGO_PASSWD": "Y4rEA14kA6zad520"
     }
 }

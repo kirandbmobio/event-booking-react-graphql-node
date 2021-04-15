@@ -19,8 +19,11 @@ module.exports = {
         throw err;
       });
   },
-  createEvent: async (args) => {
+  createEvent: async (args, req) => {
     try {
+      if (!req.isAuth) {
+        throw new Error("Unauthenticated");
+      }
       // const event = {
       //   _id: Math.random().toString(),
       //   title: args.eventInput.title,
@@ -33,12 +36,12 @@ module.exports = {
         description: args.eventInput.description,
         price: +args.eventInput.price,
         date: new Date(args.eventInput.date),
-        creator: "60745114204cf67a98ba7b49",
+        creator: req.userId,
       });
       // events.push(event);
 
       let newEvent = await event.save();
-      let userData = await User.findById("60745114204cf67a98ba7b49");
+      let userData = await User.findById(req.userId);
       if (!userData) {
         throw new Error("User not found");
       } else {

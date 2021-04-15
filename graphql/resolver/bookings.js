@@ -18,12 +18,15 @@ module.exports = {
       });
     } catch (err) {}
   },
-  bookEvent: async (args) => {
+  bookEvent: async (args, req) => {
     try {
+      if (!req.isAuth) {
+        throw new Error("Unauthenticated");
+      }
       let fetchedEvents = await Event.findById(args.eventId);
 
       let booking = new Booking({
-        user: "60745114204cf67a98ba7b49",
+        user: req.userId,
         event: fetchedEvents,
       });
       let result = await booking.save();

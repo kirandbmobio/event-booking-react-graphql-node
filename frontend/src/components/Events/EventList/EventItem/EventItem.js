@@ -12,7 +12,20 @@ const eventItem = (props) => (
     </div>
     <div>
       {props.userId === props.creatorId ? (
-        <p>You are the owner of this event</p>
+        <div className="d-flex">
+          <a
+            onClick={props.editEvent.bind(this, {
+              title: props.title,
+              price: props.price,
+              date: props.date,
+              description: props.description,
+              _id: props.eventId,
+            })}
+          >
+            <em className="fa fa-edit"></em>
+          </a>
+          <p>You are the owner of this event</p>
+        </div>
       ) : (
         <button
           className="btn"

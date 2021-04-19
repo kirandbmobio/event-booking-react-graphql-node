@@ -2,6 +2,7 @@ const Event = require("../../models/event");
 const User = require("../../models/user");
 const Booking = require("../../models/booking");
 const { user, events, singleEvent } = require("./merge");
+const { findById } = require("../../models/event");
 
 module.exports = {
   events: (args, req) => {
@@ -10,7 +11,7 @@ module.exports = {
         return eventsData.map((event) => {
           return {
             ...event._doc,
-            date: new Date(event._doc.date).toISOString(),
+            date: new Date(event._doc.date).toISOString().slice(0, 10),
             creator: user.bind(this, event._doc.creator),
           };
         });
@@ -51,7 +52,7 @@ module.exports = {
         // user.bind(this, newEvent._doc.creator);
         return {
           ...newEvent._doc,
-          date: new Date(newEvent._doc.date).toISOString(),
+          date: new Date(newEvent._doc.date).toISOString().slice(0, 10),
           creator: user.bind(this, newEvent._doc.creator),
         };
         // return {
@@ -74,6 +75,29 @@ module.exports = {
       //   });
 
       // return event;
+    } catch (err) {
+      return err;
+    }
+  },
+
+  updateEvent: async (args, req) => {
+    try {
+      if (!req.isAuth) {
+        throw new Error("Unauthenticated");
+      }
+      let alreadyExist = await Event.findById(args.eventId);
+      if (!alreadyExist) {
+        throw new Error("Event Doesn't Exists.");
+      }
+      args.eventInput.creator = req.userId.toString();
+      console.log(args.eventInput);
+      await Event.updateOne({ _id: args.eventId }, args.eventInput);
+      let updatedEvent = await Event.findById(args.eventId);
+      return {
+        ...updatedEvent._doc,
+        date: new Date(updatedEvent._doc.date).toISOString().slice(0, 10),
+        creator: user.bind(this, updatedEvent.creator),
+      };
     } catch (err) {
       return err;
     }

@@ -57,4 +57,50 @@ module.exports = {
       return err;
     }
   },
+
+  users: async (args, req) => {
+    try {
+      if (!req.isAuth) {
+        throw new Error("Unauthenticated");
+      }
+      let users = await User.find();
+      return users.map((singleUser) => {
+        return {
+          ...singleUser._doc,
+          createdEvents: events.bind(this, singleUser._doc.createdEvents),
+        };
+      });
+    } catch (err) {
+      return err;
+    }
+  },
+
+  updateUser: async (args, req) => {
+    try {
+      if (!req.isAuth) {
+        throw new Error("Unauthenticated");
+      }
+      let alreadyExist = await User.findOne({ _id: args.userId });
+      if (!alreadyExist) {
+        throw new Error("User Doesn't Exists.");
+      } else {
+        let hashPass;
+        if (args.userInput.password) {
+          hashPass = await bcrypt.hash(args.userInput.password, 12);
+        }
+        await User.updateOne(
+          { _id: args.userId },
+          { email: args.userInput.email }
+        );
+        let updatedUser = await User.findById(args.userId);
+        console.log(updatedUser);
+        return {
+          ...updatedUser._doc,
+          createdEvents: events.bind(this, updatedUser.createdEvents),
+        };
+      }
+    } catch (err) {
+      return err;
+    }
+  },
 };

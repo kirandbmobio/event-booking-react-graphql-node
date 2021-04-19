@@ -47,12 +47,16 @@ module.exports = buildSchema(`
             events: [Event!]!
             bookings: [Booking!]!
             login(email: String!, password: String!): AuthData!
+            users: [User!]!
         }
 
         type RootMutation {
             createEvent(eventInput: EventInput): Event
+            updateEvent(eventId: ID!, eventInput: EventInput): Event
             createUser(userInput: UserInput): User
+            updateUser(userId: ID, userInput: UserInput): User
             bookEvent(eventId: ID!): Booking!
+            updateBookEvent(eventId: ID!): Booking!
             cancelBooking(bookingId: ID!): Event!
         }
 

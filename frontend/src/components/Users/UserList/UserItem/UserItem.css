@@ -1,4 +1,4 @@
-.event_list-item {
+.user_list-item {
     margin: 1rem 0;
     padding: 1rem;
     border: 1px solid #5101d1;
@@ -7,19 +7,19 @@
     align-items: center;
 }
 
-.event_list-item h1 {
+.user_list-item h1 {
     margin: 0;
     font-size: 1.5rem;
     color: #5101d1;
 }
 
-.event_list-item h2 {
+.user_list-item h2 {
     margin: 0;
     font-size: 1rem;
     color: #7c7c7c
 }
 
-.event_list-item p {
+.user_list-item p {
     margin: 0;
 
 }

@@ -4,9 +4,14 @@ const Booking = require("../../models/booking");
 const { user, events, singleEvent } = require("./merge");
 
 module.exports = {
-  bookings: async () => {
+  bookings: async (args, req) => {
     try {
-      let bookings = await Booking.find();
+      if (!req.isAuth) {
+        throw new Error("Unauthenticated");
+      }
+
+      let bookings = await Booking.find({ user: req.userId });
+      //   return bookings;
       return bookings.map((booking) => {
         return {
           ...booking._doc,
@@ -16,7 +21,9 @@ module.exports = {
           updatedAt: new Date(booking._doc.updatedAt).toISOString(),
         };
       });
-    } catch (err) {}
+    } catch (err) {
+      return err;
+    }
   },
   bookEvent: async (args, req) => {
     try {
@@ -41,12 +48,16 @@ module.exports = {
       return err;
     }
   },
-  cancelBooking: async (args) => {
+  cancelBooking: async (args, req) => {
     try {
+      if (!req.isAuth) {
+        throw new Error("Unauthenticated");
+      }
+      console.log(args);
       let booking = await Booking.findById(args.bookingId).populate("event");
       let event = {
         ...booking.event._doc,
-        _id: booking.event._doc.id,
+        _id: booking.event.id,
         creator: user.bind(this, booking.event._doc.creator),
       };
       await Booking.deleteOne({ _id: args.bookingId });

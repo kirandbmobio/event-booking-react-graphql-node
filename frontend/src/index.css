@@ -66,6 +66,10 @@ code {
   border-color: #fff transparent #fff transparent;
   animation: lds-dual-ring 1.2s linear infinite;
 }
+
+.d-flex {
+    display: flex;
+}
 @keyframes lds-dual-ring {
   0% {
     transform: rotate(0deg);

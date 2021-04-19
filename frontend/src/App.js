@@ -8,6 +8,8 @@ import BookingsPage from "./pages/Bookings";
 import EventsPage from "./pages/Events";
 import MainNavigation from "./components/Navigation/MainNavigation";
 import AuthContext from "./context/auth-context";
+import UsersPage from "./pages/Users";
+import "font-awesome/css/font-awesome.min.css";
 
 class App extends Component {
   state = {
@@ -50,7 +52,10 @@ class App extends Component {
                   )}
                   <Route path="/events" component={EventsPage}></Route>
                   {this.state.token && (
-                    <Route path="/bookings" component={BookingsPage}></Route>
+                    <React.Fragment>
+                      <Route path="/bookings" component={BookingsPage}></Route>
+                      <Route path="/users" component={UsersPage}></Route>
+                    </React.Fragment>
                   )}
                   {!this.state.token && <Redirect to="/auth" exact></Redirect>}
                 </Switch>

@@ -150,7 +150,7 @@ class EventsPage extends Component {
         });
       })
       .catch((err) => {
-        console.log(err);
+        return err;
       });
   };
 
@@ -201,7 +201,6 @@ class EventsPage extends Component {
         return res.json();
       })
       .then((resData) => {
-        console.log(resData);
         this.setState({ selectedEvent: null });
         // this.setState((prevState) => {
         //   let updatedEvents = [...prevState.events];
@@ -210,7 +209,50 @@ class EventsPage extends Component {
         // });
       })
       .catch((err) => {
-        console.log(err);
+        return err;
+      });
+  };
+
+  cancelEventHandler = async (eventId) => {
+    let requestBody = {
+      query: `
+            mutation CancelEvent($eventId: ID!) {
+                cancelEvent(eventId: $eventId) {
+                    message
+                    status
+                }
+            }
+          `,
+      variables: {
+        eventId: eventId,
+      },
+    };
+
+    fetch("http://localhost:3000/graphql", {
+      method: "POST",
+      body: JSON.stringify(requestBody),
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + this.context.token,
+      },
+    })
+      .then((res) => {
+        if (res.status !== 200 && res.status !== 201) {
+          throw new Error("Failed");
+        }
+        return res.json();
+      })
+      .then((resData) => {
+        this.setState((prevState) => {
+          let updatedEvents = prevState.events.filter(
+            (event) => event._id !== eventId
+          );
+          return { eventId: null, events: updatedEvents };
+        });
+      })
+      .catch((err) => {
+        this.setState({ isLoading: false });
+        return err;
       });
   };
 
@@ -259,8 +301,8 @@ class EventsPage extends Component {
         this.setState({ events: events, isLoading: false });
       })
       .catch((err) => {
-        console.log(err);
         this.setState({ isLoading: false });
+        return err;
       });
   }
 
@@ -359,6 +401,7 @@ class EventsPage extends Component {
             authUserId={this.context.userId}
             onViewDetail={this.showDetailHandler}
             updateEvent={this.updateEvent}
+            cancelEvent={this.cancelEventHandler}
           />
         )}
       </React.Fragment>

@@ -73,7 +73,6 @@ class AuthPage extends Component {
         return res.json();
       })
       .then((resData) => {
-        console.log(resData);
         if (resData.data.login.token) {
           this.context.login(
             resData.data.login.token,
@@ -83,9 +82,8 @@ class AuthPage extends Component {
         }
       })
       .catch((err) => {
-        console.log(err);
+        return err;
       });
-    console.log(email, password);
   };
   render() {
     return (

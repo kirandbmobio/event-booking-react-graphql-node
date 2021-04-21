@@ -31,6 +31,11 @@ module.exports = buildSchema(`
             tokenExpiration: Int!
         }
 
+        type resObject {
+            message: String!
+            status: Boolean
+        }
+
         input EventInput {
             title: String
             description: String!
@@ -54,10 +59,13 @@ module.exports = buildSchema(`
             createEvent(eventInput: EventInput): Event
             updateEvent(eventId: ID!, eventInput: EventInput): Event
             createUser(userInput: UserInput): User
-            updateUser(userId: ID, userInput: UserInput): User
+            updateUser(userId: ID!, userInput: UserInput): User
+            changePassword(userId: ID!, email: String!, password: String!): User
+            deleteUser(userId: ID!): resObject!
             bookEvent(eventId: ID!): Booking!
             updateBookEvent(eventId: ID!): Booking!
             cancelBooking(bookingId: ID!): Event!
+            cancelEvent(eventId: ID!): resObject!
         }
 
         schema {

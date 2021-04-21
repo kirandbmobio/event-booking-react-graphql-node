@@ -2,7 +2,10 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
 const User = require("../../models/user");
+const Event = require("../../models/event");
+const Booking = require("../../models/booking");
 const { user, events, singleEvent } = require("./merge");
+const { assertSchema } = require("graphql");
 
 module.exports = {
   createUser: async (args) => {
@@ -30,12 +33,10 @@ module.exports = {
   login: async ({ email, password }) => {
     try {
       let existUser = await User.findOne({ email: email });
-      console.log(existUser);
       if (!existUser) {
         throw new Error("User doesn't exist!");
       }
       const isEqual = await bcrypt.compare(password, existUser.password);
-      console.log(isEqual);
       if (!isEqual) {
         throw new Error("Password is Incorrect!");
       }
@@ -93,12 +94,59 @@ module.exports = {
           { email: args.userInput.email }
         );
         let updatedUser = await User.findById(args.userId);
-        console.log(updatedUser);
         return {
           ...updatedUser._doc,
           createdEvents: events.bind(this, updatedUser.createdEvents),
         };
       }
+    } catch (err) {
+      return err;
+    }
+  },
+
+  deleteUser: async (args, req) => {
+    try {
+      if (!req.isAuth) {
+        throw new Error("Unauthenticated");
+      }
+      let alreadyExist = await User.findById(args.userId);
+      if (!alreadyExist) {
+        throw new Error("User Doesn't Exists.");
+      }
+
+      await Event.deleteMany({
+        _id: alreadyExist.createdEvents,
+      });
+      await Booking.deleteMany({ user: args.userId });
+      await User.deleteOne({ _id: args.userId });
+      return { message: "Deleted Successfully", status: true };
+    } catch (err) {
+      return err;
+    }
+  },
+
+  changePassword: async (args, req) => {
+    try {
+      if (!req.isAuth) {
+        throw new Error("Unauthenticated");
+      }
+      let alreadyExist = await User.findById(args.userId);
+      if (!alreadyExist) {
+        throw new Error("User Doesn't Exists.");
+      }
+      let hashPass;
+      if (args.password) {
+        hashPass = await bcrypt.hash(args.password, 12);
+      }
+      await User.updateOne(
+        { _id: args.userId },
+        { email: args.email, password: hashPass }
+      );
+      let updatedUser = await User.findById(args.userId);
+      return {
+        ...updatedUser._doc,
+        createdEvents: events.bind(this, updatedUser.createdEvents),
+      };
     } catch (err) {
       return err;
     }

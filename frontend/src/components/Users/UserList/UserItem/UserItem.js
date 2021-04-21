@@ -26,6 +26,21 @@ const userItem = (props) => (
       >
         Edit
       </button>
+      <button
+        className="btn danger"
+        onClick={props.deleteUser.bind(this, props.userId)}
+      >
+        Delete
+      </button>
+      <button
+        className="btn"
+        onClick={props.changePassword.bind(this, {
+          _id: props.userId,
+          email: props.email,
+        })}
+      >
+        Change Password
+      </button>
     </div>
   </li>
 );

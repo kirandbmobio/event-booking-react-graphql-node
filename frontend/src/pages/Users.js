@@ -17,6 +17,7 @@ class UsersPage extends Component {
     userTitle: "Add User",
     userId: "",
     selectedUser: null,
+    update: false,
   };
   constructor(props) {
     super(props);
@@ -47,8 +48,67 @@ class UsersPage extends Component {
   };
 
   updateUser = async (user) => {
-    console.log(user);
-    this.setState({ userId: user._id, email: user.email, openUserModal: true });
+    this.setState({
+      userId: user._id,
+      email: user.email,
+      openUserModal: true,
+      update: true,
+    });
+  };
+
+  deleteUser = async (userId) => {
+    let requestBody = {
+      query: `
+            mutation DeleteUser($userId: ID!) {
+                deleteUser(userId: $userId) {
+                    message
+                    status
+                }
+            }
+          `,
+      variables: {
+        userId: userId,
+      },
+    };
+
+    fetch("http://localhost:3000/graphql", {
+      method: "POST",
+      body: JSON.stringify(requestBody),
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + this.context.token,
+      },
+    })
+      .then((res) => {
+        if (res.status !== 200 && res.status !== 201) {
+          throw new Error("Failed");
+        }
+        return res.json();
+      })
+      .then((resData) => {
+        this.setState((prevState) => {
+          let updatedUsers = prevState.users.filter(
+            (user) => user._id !== userId
+          );
+
+          return { users: updatedUsers };
+        });
+        this.setState({ email: "", password: "", userId: "" });
+      })
+      .catch((err) => {
+        this.setState({ email: "", password: "", userId: "" });
+        return err;
+      });
+  };
+
+  changePassword = async (user) => {
+    this.setState({
+      userId: user._id,
+      email: user.email,
+      userTitle: "Change Password",
+      openUserModal: true,
+      update: false,
+    });
   };
 
   onConfirmHandler = async () => {
@@ -58,8 +118,25 @@ class UsersPage extends Component {
 
     let requestBody;
     if (this.state.userId) {
-      requestBody = {
-        query: `
+      if (!this.state.update) {
+        requestBody = {
+          query: `
+            mutation ChangePassword($userId: ID!, $email: String!,  $password: String!) {
+                changePassword(userId: $userId, email: $email, password: $password) {
+                    _id
+                    email
+                }
+            }
+        `,
+          variables: {
+            userId: this.state.userId,
+            email: email,
+            password: password,
+          },
+        };
+      } else {
+        requestBody = {
+          query: `
             mutation UpdateUser($userId: ID!, $email: String!, $password: String!) {
                 updateUser(userId: $userId,userInput: {email:$email, password: $password}) {
                     _id
@@ -67,12 +144,13 @@ class UsersPage extends Component {
                 }
             }
         `,
-        variables: {
-          userId: this.state.userId,
-          email: email,
-          password: password,
-        },
-      };
+          variables: {
+            userId: this.state.userId,
+            email: email,
+            password: password,
+          },
+        };
+      }
     } else {
       requestBody = {
         query: `
@@ -193,17 +271,31 @@ class UsersPage extends Component {
             confirmText="Confirm"
           >
             <form>
-              <div className="form-control">
-                <label htmlFor="email">E-Mail</label>
-                <input
-                  type="text"
-                  id="email"
-                  name="email"
-                  ref={this.emailRef}
-                  value={this.state.email}
-                  onChange={this.handleInputChange}
-                />
-              </div>
+              {this.state.update ? (
+                <div className="form-control">
+                  <label htmlFor="email">E-Mail</label>
+                  <input
+                    type="text"
+                    id="email"
+                    name="email"
+                    ref={this.emailRef}
+                    value={this.state.email}
+                    onChange={this.handleInputChange}
+                  />
+                </div>
+              ) : (
+                <div className="form-control">
+                  <label htmlFor="password">Password</label>
+                  <input
+                    type="password"
+                    id="password"
+                    name="password"
+                    ref={this.passwordRef}
+                    value={this.state.password}
+                    onChange={this.handleInputChange}
+                  />
+                </div>
+              )}
               {/* <div className="form-control">
                 <label htmlFor="password">Password</label>
                 <input
@@ -244,6 +336,8 @@ class UsersPage extends Component {
             authUserId={this.context.userId}
             onViewDetail={this.showDetailHandler}
             updateUser={this.updateUser}
+            deleteUser={this.deleteUser}
+            changePassword={this.changePassword}
           />
         )}
       </React.Fragment>

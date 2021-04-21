@@ -5,20 +5,34 @@ const { user, events, singleEvent } = require("./merge");
 const { findById } = require("../../models/event");
 
 module.exports = {
-  events: (args, req) => {
-    return Event.find()
-      .then((eventsData) => {
-        return eventsData.map((event) => {
-          return {
-            ...event._doc,
-            date: new Date(event._doc.date).toISOString().slice(0, 10),
-            creator: user.bind(this, event._doc.creator),
-          };
-        });
-      })
-      .catch((err) => {
-        throw err;
+  events: async (args, req) => {
+    // return Event.find()
+    //   .then((eventsData) => {
+    //     return eventsData.map((event) => {
+    //       return {
+    //         ...event._doc,
+    //         date: new Date(event._doc.date).toISOString().slice(0, 10),
+    //         creator: user.bind(this, event._doc.creator),
+    //       };
+    //     });
+    //   })
+    //   .catch((err) => {
+    //     throw err;
+    //   });
+    try {
+      let allEvents = await Event.find();
+
+      allEvents = allEvents.map(async (event) => {
+        return {
+          ...event._doc,
+          date: new Date(event._doc.date).toISOString().slice(0, 10),
+          creator: user.bind(this, event.creator),
+        };
       });
+      return allEvents;
+    } catch (err) {
+      return err;
+    }
   },
   createEvent: async (args, req) => {
     try {
@@ -48,7 +62,6 @@ module.exports = {
       } else {
         userData.createdEvents.push(event);
         await userData.save();
-        console.log(newEvent);
         // user.bind(this, newEvent._doc.creator);
         return {
           ...newEvent._doc,
@@ -90,7 +103,6 @@ module.exports = {
         throw new Error("Event Doesn't Exists.");
       }
       args.eventInput.creator = req.userId.toString();
-      console.log(args.eventInput);
       await Event.updateOne({ _id: args.eventId }, args.eventInput);
       let updatedEvent = await Event.findById(args.eventId);
       return {
@@ -98,6 +110,23 @@ module.exports = {
         date: new Date(updatedEvent._doc.date).toISOString().slice(0, 10),
         creator: user.bind(this, updatedEvent.creator),
       };
+    } catch (err) {
+      return err;
+    }
+  },
+
+  cancelEvent: async (args, req) => {
+    try {
+      if (!req.isAuth) {
+        throw new Error("Unauthenticated");
+      }
+      let alreadyExist = await Event.findById(args.eventId);
+      if (!alreadyExist) {
+        throw new Error("Event Doesn't Exists.");
+      }
+      await Booking.deleteMany({ event: args.eventId });
+      let deletedEvent = await Event.deleteOne({ _id: args.eventId });
+      return { message: "Deleted Successfully", status: true };
     } catch (err) {
       return err;
     }

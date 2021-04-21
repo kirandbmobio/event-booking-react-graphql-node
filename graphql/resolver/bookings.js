@@ -53,7 +53,6 @@ module.exports = {
       if (!req.isAuth) {
         throw new Error("Unauthenticated");
       }
-      console.log(args);
       let booking = await Booking.findById(args.bookingId).populate("event");
       let event = {
         ...booking.event._doc,
@@ -61,8 +60,10 @@ module.exports = {
         creator: user.bind(this, booking.event._doc.creator),
       };
       await Booking.deleteOne({ _id: args.bookingId });
-      console.log(event);
+
       return event;
-    } catch (err) {}
+    } catch (err) {
+      return err;
+    }
   },
 };

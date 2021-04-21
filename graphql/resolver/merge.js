@@ -25,11 +25,12 @@ const events = async (eventIds) => {
 const user = async (userId) => {
   try {
     let userData = await User.findById(userId);
-
-    return {
-      ...userData._doc,
-      createdEvents: events.bind(this, userData._doc.createdEvents),
-    };
+    if (userData) {
+      return {
+        ...userData._doc,
+        createdEvents: events.bind(this, userData._doc.createdEvents),
+      };
+    }
   } catch (err) {
     return err;
   }

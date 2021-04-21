@@ -17,6 +17,7 @@ const eventList = (props) => {
         description={event.description}
         viewDetails={props.onViewDetail}
         editEvent={props.updateEvent}
+        cancelEvent={props.cancelEvent}
       />
     );
   });

@@ -13,6 +13,8 @@ let userList = (props) => {
         email={user.email}
         viewDetails={props.onViewDetail}
         editUser={props.updateUser}
+        deleteUser={props.deleteUser}
+        changePassword={props.changePassword}
       />
     );
   });

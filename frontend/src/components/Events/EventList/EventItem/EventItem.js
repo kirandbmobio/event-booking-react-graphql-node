@@ -24,6 +24,12 @@ const eventItem = (props) => (
           >
             <em className="fa fa-edit"></em>
           </a>
+          <button
+            className="btn danger"
+            onClick={props.cancelEvent.bind(this, props.eventId)}
+          >
+            Cancel
+          </button>
           <p>You are the owner of this event</p>
         </div>
       ) : (

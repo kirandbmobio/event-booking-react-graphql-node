@@ -2,11 +2,14 @@ import React, { Component } from "react";
 import Spinner from "../components/Spinner/Spinner";
 import AuthContext from "../context/auth-context";
 import BookingList from "../components/Bookings/BookingList/BookingList";
+import BookingChart from "../components/Bookings/BookingChart/BookingChart";
+import BookingsControl from "../components/Bookings/BookingsControl/BookingsControl";
 
 class BookingsPage extends Component {
   state = {
     isLoading: false,
     bookings: [],
+    outPutType: "list",
   };
 
   isActive = true;
@@ -28,6 +31,7 @@ class BookingsPage extends Component {
                         _id
                         title
                         date
+                        price
                     }
                     createdAt
                 }
@@ -56,10 +60,10 @@ class BookingsPage extends Component {
         }
       })
       .catch((err) => {
-        console.log(err);
         if (this.isActive) {
           this.setState({ isLoading: false });
         }
+        return err;
       });
   };
 
@@ -101,11 +105,19 @@ class BookingsPage extends Component {
         }
       })
       .catch((err) => {
-        console.log(err);
         if (this.isActive) {
           this.setState({ isLoading: false });
         }
+        return err;
       });
+  };
+
+  changeOutputTypeHandler = async (outPutType) => {
+    if (outPutType === "list") {
+      this.setState({ outPutType: "list" });
+    } else {
+      this.setState({ outPutType: "chart" });
+    }
   };
 
   componentWillUnmount() {
@@ -113,26 +125,28 @@ class BookingsPage extends Component {
   }
 
   render() {
-    return (
-      <React.Fragment>
-        {this.state.isLoading ? (
-          <Spinner />
-        ) : (
-          <BookingList
-            bookings={this.state.bookings}
-            onDelete={this.cancelBookingHandler}
+    let content = <Spinner />;
+    if (!this.state.isLoading) {
+      content = (
+        <React.Fragment>
+          <BookingsControl
+            activeOutputType={this.state.outPutType}
+            onChange={this.changeOutputTypeHandler}
           />
-          //   <ul>
-          //     {this.state.bookings.map((booking) => (
-          //       <li key={booking._id}>
-          //         {booking.event.title} -{" "}
-          //         {new Date(booking.createdAt).toLocaleDateString()}
-          //       </li>
-          //     ))}
-          //   </ul>
-        )}
-      </React.Fragment>
-    );
+          <div>
+            {this.state.outPutType === "list" ? (
+              <BookingList
+                bookings={this.state.bookings}
+                onDelete={this.cancelBookingHandler}
+              />
+            ) : (
+              <BookingChart bookings={this.state.bookings} />
+            )}
+          </div>
+        </React.Fragment>
+      );
+    }
+    return <React.Fragment>{content}</React.Fragment>;
   }
 }
 
